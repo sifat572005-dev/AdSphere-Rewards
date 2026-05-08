@@ -3,13 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AdSphere Rewards - Withdraw History Edition</title>
+<title>AdSphere Rewards - Fixed Edition</title>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-<!-- Monetag SDK for Slot 1 -->
 <script src='//libtl.com/sdk.js' data-zone='10935540' data-sdk='show_10935540'></script>
 
 <style>
@@ -26,50 +24,14 @@
   .btn-checkin { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, #F5C842, #E8A020); color: #000; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(245, 200, 66, 0.3); transition: 0.3s; }
   .btn-checkin:disabled { background: #2A2E39; color: #555; box-shadow: none; cursor: not-allowed; }
   .section-title { padding: 0 20px 10px; font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; }
-  /* Ad Box এর স্টাইল পরিবর্তন */
-  .ad-box {
-    background: var(--surface);
-    padding: 20px;
-    border-radius: 18px;
-    margin: 15px auto; /* মাঝখানে আনার জন্য */
-    border: 1px solid var(--border);
-    display: flex;
-    flex-direction: column; /* বাটন এবং টেক্সট উপরে নিচে রাখার জন্য */
-    align-items: center; /* মাঝখানে আনার জন্য */
-    justify-content: center;
-    max-width: 300px; /* নির্দিষ্ট চওড়া */
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.6); /* উজ্জ্বল ফ্রেম */
-    position: relative; /* কাউন্টার পজিশন করার জন্য */
-  }
+  .ad-box { background: var(--surface); padding: 20px; border-radius: 18px; margin: 15px auto; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 300px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.6); position: relative; }
   .ad-info { text-align: center; margin-bottom: 15px; }
   .ad-info h4 { font-size: 18px; margin-bottom: 8px; color: var(--accent); }
   .ad-info p { font-size: 14px; color: #7A82A0; }
-  .btn-watch {
-    padding: 15px 30px; /* বাটনের আকার বড় করা */
-    border-radius: 12px;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 16px; /* ফন্ট সাইজ বড় করা */
-    transition: 0.3s;
-    width: 80%; /* বাটনের চওড়া */
-    max-width: 200px; /* সর্বোচ্চ চওড়া */
-  }
+  .btn-watch { padding: 15px 30px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; font-size: 16px; transition: 0.3s; width: 80%; max-width: 200px; }
   .btn-slot1 { background: var(--accent); color: #000; }
   .btn-slot2 { background: var(--gold); color: #000; }
-  /* কাউন্টার স্টাইল */
-  .ad-counter {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 12px;
-  }
-
-
+  .ad-counter { position: absolute; top: 10px; right: 10px; background: rgba(0, 0, 0, 0.5); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
   #ad-overlay { position: fixed; inset: 0; background: #050810; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
   .timer-circle { width: 100px; height: 100px; border: 5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--gold); box-shadow: 0 0 20px var(--gold-glow); margin-bottom: 30px; }
   .fake-x { position: absolute; top: 30px; right: 30px; font-size: 24px; color: #222; cursor: pointer; display: none; }
@@ -82,13 +44,7 @@
   .card { background: var(--surface); margin: 15px; padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
   .input-field { width: 100%; padding: 15px; background: #070B14; border: 1px solid var(--border); border-radius: 12px; color: white; margin: 10px 0; outline: none; }
   .btn-withdraw { width: 100%; padding: 16px; background: var(--green); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; }
-
-  /* History Table Style */
-  .history-item {
-    background: #0D1221; padding: 12px; border-radius: 10px; margin-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: center;
-    border: 1px solid var(--border); font-size: 13px;
-  }
+  .history-item { background: #0D1221; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); font-size: 13px; }
   .status-p { color: var(--gold); }
   .status-s { color: var(--green); }
   .status-r { color: var(--red); }
@@ -102,14 +58,12 @@
         <div id="u-id" style="font-size: 10px; color: #5B637A; margin-top: 5px;">Loading...</div>
     </div>
 
-    <!-- Balance Section -->
     <div class="balance-card">
         <div class="token-val" id="user-tokens">0</div>
         <div style="font-size: 14px; color: var(--gold); font-weight: bold;">TOTAL TOKENS</div>
         <div class="taka-val" id="user-taka">≈ 0.00 Taka</div>
     </div>
 
-    <!-- EARN PAGE -->
     <div id="earn-page" class="page active">
         <div class="checkin-container">
             <button class="btn-checkin" id="btn-checkin" onclick="claimDaily()">
@@ -119,26 +73,22 @@
 
         <div class="section-title">📡 Live Ad Slots</div>
         
-        <!-- Slot 1 Ad Box -->
         <div class="ad-box">
-            <span class="ad-counter" id="slot1-counter">0/50</span>
+            <span class="ad-counter" id="slot1-counter">0/--</span>
             <div class="ad-info"><h4>Slot 1</h4><p>Watch video • 5 Tokens</p></div>
             <button class="btn-watch btn-slot1" id="btn-slot1" onclick="watchSlot1()">Watch</button>
         </div>
 
-        <!-- Slot 2 Ad Box -->
         <div class="ad-box">
-            <span class="ad-counter" id="slot2-counter">0/50</span>
+            <span class="ad-counter" id="slot2-counter">0/--</span>
             <div class="ad-info"><h4>Slot 2</h4><p>15s Timer • 5 Tokens</p></div>
             <button class="btn-watch btn-slot2" id="btn-slot2" onclick="watchSlot2()">Watch</button>
         </div>
-
 
         <div class="section-title">⚡ Extra Tasks</div>
         <div id="dynamic-tasks"></div>
     </div>
 
-    <!-- REFER PAGE -->
     <div id="refer-page" class="page">
         <div class="section-title">👥 Refer & Earn</div>
         <div class="card" style="text-align: center;">
@@ -148,7 +98,6 @@
         </div>
     </div>
 
-    <!-- WALLET PAGE (Updated with History) -->
     <div id="wallet-page" class="page">
         <div class="section-title">💼 Withdraw Wallet</div>
         <div class="card">
@@ -158,12 +107,8 @@
             <input type="number" id="w-amount" class="input-field" placeholder="Amount of Tokens">
             <button class="btn-withdraw" onclick="withdraw()">Withdraw Now</button>
         </div>
-
         <div class="section-title">📜 Withdraw History</div>
-        <div id="withdraw-list" style="padding: 0 15px; margin-top: 10px;">
-            <!-- History will load here -->
-            <p style="font-size: 12px; color: #555; text-align: center;">No history available</p>
-        </div>
+        <div id="withdraw-list" style="padding: 0 15px; margin-top: 10px;"></div>
     </div>
 
     <div class="bottom-nav">
@@ -173,7 +118,6 @@
     </div>
 </div>
 
-<!-- Ad Overlays... (আগের মতোই) -->
 <div id="ad-overlay">
     <div class="fake-x" onclick="alert('Wait for timer!')">✖</div>
     <div class="real-x" id="real-x-btn" onclick="completeAdsterra()">✖ Close Ad</div>
@@ -195,57 +139,44 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- STATE ---
 let UID = localStorage.getItem('ads_uid') || "U" + Math.floor(Math.random()*1000000);
 localStorage.setItem('ads_uid', UID);
 
 let userData = {
-    tokens: 0,
-    referrals: 0,
-    streak: 0,
-    lastCheck: "",
-    completedTasks: {},
-    adCounts: {
-        slot1: { count: 0, date: "" },
-        slot2: { count: 0, date: "" }
-    }
+    tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {},
+    adCounts: { slot1: { count: 0, date: "" }, slot2: { count: 0, date: "" } }
 };
-let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100, maxAdsPerSlot: 50 }; // maxAdsPerSlot যোগ করা হয়েছে
+// Default Settings Fallback
+let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100, maxAdsPerSlot: 50 };
 const today = new Date().toLocaleDateString();
 
 function syncAll() {
-    db.ref('settings').on('value', (s) => { if(s.exists()) settings = s.val(); updateUI(); });
+    db.ref('settings').on('value', (s) => {
+        if(s.exists()) {
+            settings = {...settings, ...s.val()};
+            // Force 50 if still undefined in DB
+            if(!settings.maxAdsPerSlot) settings.maxAdsPerSlot = 50;
+        }
+        updateUI();
+    });
 
     db.ref('users/' + UID).on('value', (s) => {
         if(s.exists()) {
             userData = s.val();
-            // Ad count reset for new day
-            if (!userData.adCounts) { // যদি adCounts না থাকে তবে ইনিশিয়ালাইজ করো
-                userData.adCounts = {
-                    slot1: { count: 0, date: "" },
-                    slot2: { count: 0, date: "" }
-                };
+            if (!userData.adCounts) {
+                userData.adCounts = { slot1: { count: 0, date: today }, slot2: { count: 0, date: today } };
+                db.ref('users/' + UID + '/adCounts').set(userData.adCounts);
             }
             if (userData.adCounts.slot1.date !== today) {
-                userData.adCounts.slot1 = { count: 0, date: today };
-                db.ref('users/' + UID + '/adCounts/slot1').set(userData.adCounts.slot1);
+                db.ref('users/' + UID + '/adCounts/slot1').update({ count: 0, date: today });
             }
             if (userData.adCounts.slot2.date !== today) {
-                userData.adCounts.slot2 = { count: 0, date: today };
-                db.ref('users/' + UID + '/adCounts/slot2').set(userData.adCounts.slot2);
+                db.ref('users/' + UID + '/adCounts/slot2').update({ count: 0, date: today });
             }
-
         } else {
             db.ref('users/' + UID).set({
-                tokens: 0,
-                referrals: 0,
-                streak: 0,
-                lastCheck: "",
-                completedTasks: {},
-                adCounts: {
-                    slot1: { count: 0, date: today },
-                    slot2: { count: 0, date: today }
-                }
+                tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {},
+                adCounts: { slot1: { count: 0, date: today }, slot2: { count: 0, date: today } }
             });
         }
         updateUI();
@@ -256,11 +187,8 @@ function syncAll() {
         const container = document.getElementById('dynamic-tasks');
         container.innerHTML = "";
         for(let id in tasks) {
-            const isCompleted = userData.completedTasks && userData.completedTasks[id];
-            const buttonText = isCompleted ? '✅ Completed' : 'Visit';
-            const buttonDisabled = isCompleted ? 'disabled' : '';
-
-            container.innerHTML += `<div class="ad-box"><div class="ad-info"><h4>${tasks[id].name}</h4><p>${tasks[id].reward} Tokens</p></div><button class="btn-watch btn-slot1" ${buttonDisabled} onclick="doTask('${id}', '${tasks[id].link}', ${tasks[id].reward})">${buttonText}</button></div>`;
+            const isComp = userData.completedTasks && userData.completedTasks[id];
+            container.innerHTML += `<div class="ad-box"><div class="ad-info"><h4>${tasks[id].name}</h4><p>${tasks[id].reward} Tokens</p></div><button class="btn-watch btn-slot1" ${isComp?'disabled':''} onclick="doTask('${id}', '${tasks[id].link}', ${tasks[id].reward})">${isComp?'✅ Done':'Visit'}</button></div>`;
         }
     });
 
@@ -269,77 +197,51 @@ function syncAll() {
         const container = document.getElementById('withdraw-list');
         container.innerHTML = "";
         let found = false;
-        const withdrawalArray = [];
-        for (let id in list) {
-            withdrawalArray.push({ id, ...list[id] });
-        }
-        withdrawalArray.sort((a, b) => b.time - a.time);
-
-        withdrawalArray.forEach(item => {
+        const arr = [];
+        for (let id in list) arr.push({ id, ...list[id] });
+        arr.sort((a, b) => b.time - a.time);
+        arr.forEach(item => {
             if(item.uid === UID) {
                 found = true;
-                let statusText = item.status.toUpperCase();
-                let statusClass = (item.status === 'pending') ? 'status-p' : (item.status === 'paid' ? 'status-s' : 'status-r');
-                
-                container.innerHTML += `
-                    <div class="history-item">
-                        <div>
-                            <b>${item.amount} Tokens</b><br>
-                            <span style="font-size:10px; color:#555;">${item.bkash}</span>
-                        </div>
-                        <div class="${statusClass}">${statusText}</div>
-                    </div>`;
+                let sClass = (item.status === 'pending') ? 'status-p' : (item.status === 'paid' ? 'status-s' : 'status-r');
+                container.innerHTML += `<div class="history-item"><div><b>${item.amount} Tokens</b><br><small>${item.bkash}</small></div><div class="${sClass}">${item.status.toUpperCase()}</div></div>`;
             }
         });
-        if(!found) container.innerHTML = `<p style="font-size: 12px; color: #555; text-align: center;">No history available</p>`;
+        if(!found) container.innerHTML = `<p style="text-align:center;font-size:12px;color:#555">No history</p>`;
     });
 }
 
 function updateUI() {
     document.getElementById('u-id').innerText = "ID: " + UID;
     document.getElementById('user-tokens').innerText = userData.tokens || 0;
-    let taka = ((userData.tokens || 0) / settings.rate).toFixed(2);
-    document.getElementById('user-taka').innerText = `≈ ${taka} Taka`;
+    document.getElementById('user-taka').innerText = `≈ ${((userData.tokens||0)/settings.rate).toFixed(2)} Taka`;
     document.getElementById('ref-count').innerText = userData.referrals || 0;
     document.getElementById('share-link').value = window.location.origin + "?ref=" + UID;
     document.getElementById('daily-amt').innerText = (userData.streak || 0) + 1;
-    document.getElementById('withdraw-info').innerHTML = `• Min Withdrawal: ${settings.minWithdraw} Tokens<br>• 1 Taka = ${settings.rate} Tokens<br>• Condition: ${settings.minRef} Referrals`;
+    document.getElementById('withdraw-info').innerHTML = `• Min: ${settings.minWithdraw} | 1 Taka = ${settings.rate} | Req: ${settings.minRef} Refs`;
+    
     const status = document.getElementById('ref-status');
-    if((userData.referrals || 0) >= settings.minRef) {
-        status.innerText = "✅ Condition Met!";
-        status.style.color = "var(--green)";
-    } else {
-        status.innerText = `❌ ${settings.minRef} Referrals Needed`;
-        status.style.color = "var(--red)";
-    }
+    const canWithdraw = (userData.referrals || 0) >= settings.minRef;
+    status.innerText = canWithdraw ? "✅ Condition Met!" : `❌ ${settings.minRef} Referrals Needed`;
+    status.style.color = canWithdraw ? "var(--green)" : "var(--red)";
+
     if(userData.lastCheck === today) {
         document.getElementById('btn-checkin').disabled = true;
         document.getElementById('btn-checkin').innerText = "✅ CLAIMED";
     }
 
-    // Update ad counters and button states
-    const slot1Count = userData.adCounts.slot1.count;
-    const slot2Count = userData.adCounts.slot2.count;
-    const maxAds = settings.maxAdsPerSlot;
+    // Fixed Ad Counter Logic
+    const s1 = (userData.adCounts && userData.adCounts.slot1) ? userData.adCounts.slot1.count : 0;
+    const s2 = (userData.adCounts && userData.adCounts.slot2) ? userData.adCounts.slot2.count : 0;
+    const max = settings.maxAdsPerSlot || 50;
 
-    document.getElementById('slot1-counter').innerText = `${slot1Count}/${maxAds}`;
-    document.getElementById('slot2-counter').innerText = `${slot2Count}/${maxAds}`;
+    document.getElementById('slot1-counter').innerText = `${s1}/${max}`;
+    document.getElementById('slot2-counter').innerText = `${s2}/${max}`;
 
-    if (slot1Count >= maxAds) {
-        document.getElementById('btn-slot1').disabled = true;
-        document.getElementById('btn-slot1').innerText = "Limit Reached";
-    } else {
-        document.getElementById('btn-slot1').disabled = false;
-        document.getElementById('btn-slot1').innerText = "Watch";
-    }
-
-    if (slot2Count >= maxAds) {
-        document.getElementById('btn-slot2').disabled = true;
-        document.getElementById('btn-slot2').innerText = "Limit Reached";
-    } else {
-        document.getElementById('btn-slot2').disabled = false;
-        document.getElementById('btn-slot2').innerText = "Watch";
-    }
+    document.getElementById('btn-slot1').disabled = (s1 >= max);
+    document.getElementById('btn-slot1').innerText = (s1 >= max) ? "Limit Over" : "Watch";
+    document.getElementById('btn-slot2').disabled = (s2 >= max);
+    document.getElementById('btn-slot2').innerText = (s2 >= max) ? "Limit Over" : "Watch";
 }
 
 function claimDaily() {
@@ -350,30 +252,19 @@ function claimDaily() {
 }
 
 function watchSlot1() {
-    if (userData.adCounts.slot1.count >= settings.maxAdsPerSlot) {
-        alert("You have reached the daily limit for Slot 1 ads.");
-        return;
-    }
-
     if (typeof show_10935540 === 'function') {
         show_10935540().then(() => {
-            const newCount = userData.adCounts.slot1.count + 1;
-            const updates = {};
-            updates['tokens'] = (userData.tokens || 0) + 5;
-            updates['adCounts/slot1/count'] = newCount;
-            updates['adCounts/slot1/date'] = today; // Ensure date is updated
-            db.ref('users/' + UID).update(updates);
+            db.ref('users/' + UID).update({
+                tokens: (userData.tokens || 0) + 5,
+                "adCounts/slot1/count": (userData.adCounts.slot1.count + 1),
+                "adCounts/slot1/date": today
+            });
             alert("5 Tokens Added!");
         });
     } else { alert("Ad Loading..."); }
 }
 
 function watchSlot2() {
-    if (userData.adCounts.slot2.count >= settings.maxAdsPerSlot) {
-        alert("You have reached the daily limit for Slot 2 ads.");
-        return;
-    }
-
     window.open("https://www.profitablecpmratenetwork.com/q8n1n0zh8?key=a85d3e74217dd16c5ae7e16e5f3e9e35", "_blank");
     document.getElementById('ad-overlay').style.display = 'flex';
     let count = 15;
@@ -390,30 +281,23 @@ function watchSlot2() {
 }
 
 function completeAdsterra() {
-    const newCount = userData.adCounts.slot2.count + 1;
-    const updates = {};
-    updates['tokens'] = (userData.tokens || 0) + 5;
-    updates['adCounts/slot2/count'] = newCount;
-    updates['adCounts/slot2/date'] = today; // Ensure date is updated
-    db.ref('users/' + UID).update(updates);
-
+    db.ref('users/' + UID).update({
+        tokens: (userData.tokens || 0) + 5,
+        "adCounts/slot2/count": (userData.adCounts.slot2.count + 1),
+        "adCounts/slot2/date": today
+    });
     document.getElementById('ad-overlay').style.display = 'none';
     document.getElementById('real-x-btn').style.display = 'none';
     alert("5 Tokens Added!");
 }
 
 function doTask(taskId, link, reward) {
-    if (userData.completedTasks && userData.completedTasks[taskId]) {
-        alert("You have already completed this task permanently!");
-        return;
-    }
-
     window.open(link, "_blank");
     setTimeout(() => {
-        const updates = {};
-        updates['tokens'] = (userData.tokens || 0) + reward;
-        updates['completedTasks/' + taskId] = true;
-        db.ref('users/' + UID).update(updates);
+        db.ref('users/' + UID).update({
+            tokens: (userData.tokens || 0) + reward,
+            ["completedTasks/" + taskId]: true
+        });
         alert("Task Complete!");
     }, 5000);
 }
@@ -421,10 +305,10 @@ function doTask(taskId, link, reward) {
 function withdraw() {
     const num = document.getElementById('bkash-num').value;
     const amt = parseInt(document.getElementById('w-amount').value);
-    if((userData.referrals || 0) < settings.minRef) return alert(`Need ${settings.minRef} refs!`);
-    if(amt < settings.minWithdraw) return alert(`Min ${settings.minWithdraw} tokens!`);
-    if(userData.tokens < amt) return alert("Insufficient balance!");
-    if(num.length < 11) return alert("Valid bKash required.");
+    if((userData.referrals || 0) < settings.minRef) return alert("Need more refs!");
+    if(amt < settings.minWithdraw) return alert("Min withdraw limit!");
+    if(userData.tokens < amt) return alert("Low balance!");
+    if(num.length < 11) return alert("Invalid bKash.");
 
     db.ref('withdrawals/').push({ uid: UID, bkash: num, amount: amt, status: "pending", time: Date.now() });
     db.ref('users/' + UID).update({ tokens: userData.tokens - amt });
