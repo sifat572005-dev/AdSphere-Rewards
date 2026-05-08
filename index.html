@@ -1,0 +1,313 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdSphere Rewards - Withdraw History Edition</title>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<!-- Monetag SDK for Slot 1 -->
+<script src='//libtl.com/sdk.js' data-zone='10935540' data-sdk='show_10935540'></script>
+
+<style>
+  /* আগের সব CSS এখানে থাকবে... শুধু হিস্টরির জন্য নিচের টুকু যোগ হবে */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Poppins', sans-serif; background: #070B14; color: #E8EAF0; overflow-x: hidden; }
+  :root { --gold: #F5C842; --gold-glow: rgba(245, 200, 66, 0.4); --accent: #00D2FF; --green: #2ECC8A; --red: #FF4F6D; --surface: #101626; --border: rgba(255, 255, 255, 0.08); }
+  .app { max-width: 420px; margin: 0 auto; padding-bottom: 100px; min-height: 100vh; position: relative; }
+  .header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); background: #0A0F1E; }
+  .brand { font-size: 22px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px var(--gold-glow); }
+  .balance-card { background: linear-gradient(145deg, #161D2F, #0A0F1E); margin: 15px; padding: 25px; border-radius: 20px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .token-val { font-size: 40px; font-weight: 900; color: var(--gold); letter-spacing: -1px; }
+  .taka-val { font-size: 14px; color: #7A82A0; margin-top: 5px; }
+  .checkin-container { padding: 0 15px; margin-bottom: 20px; }
+  .btn-checkin { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, #F5C842, #E8A020); color: #000; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(245, 200, 66, 0.3); transition: 0.3s; }
+  .btn-checkin:disabled { background: #2A2E39; color: #555; box-shadow: none; cursor: not-allowed; }
+  .section-title { padding: 0 20px 10px; font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; }
+  .ad-box { background: var(--surface); padding: 20px; border-radius: 18px; margin: 0 15px 15px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .ad-info h4 { font-size: 15px; margin-bottom: 4px; }
+  .ad-info p { font-size: 12px; color: #7A82A0; }
+  .btn-watch { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.3s; }
+  .btn-slot1 { background: var(--accent); color: #000; }
+  .btn-slot2 { background: var(--gold); color: #000; }
+  #ad-overlay { position: fixed; inset: 0; background: #050810; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+  .timer-circle { width: 100px; height: 100px; border: 5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--gold); box-shadow: 0 0 20px var(--gold-glow); margin-bottom: 30px; }
+  .fake-x { position: absolute; top: 30px; right: 30px; font-size: 24px; color: #222; cursor: pointer; display: none; }
+  .real-x { position: absolute; top: 30px; right: 30px; font-size: 16px; background: var(--red); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; display: none; font-weight: bold; }
+  .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 420px; background: #0D1221; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; }
+  .nav-btn { flex: 1; border: none; background: none; color: #5B637A; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .nav-btn.active { color: var(--gold); text-shadow: 0 0 12px var(--gold-glow); }
+  .page { display: none; }
+  .page.active { display: block; }
+  .card { background: var(--surface); margin: 15px; padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+  .input-field { width: 100%; padding: 15px; background: #070B14; border: 1px solid var(--border); border-radius: 12px; color: white; margin: 10px 0; outline: none; }
+  .btn-withdraw { width: 100%; padding: 16px; background: var(--green); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; }
+
+  /* History Table Style */
+  .history-item {
+    background: #0D1221; padding: 12px; border-radius: 10px; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border); font-size: 13px;
+  }
+  .status-p { color: var(--gold); }
+  .status-s { color: var(--green); }
+  .status-r { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header">
+        <div class="brand">ADSPHERE REWARDS</div>
+        <div id="u-id" style="font-size: 10px; color: #5B637A; margin-top: 5px;">Loading...</div>
+    </div>
+
+    <!-- Balance Section -->
+    <div class="balance-card">
+        <div class="token-val" id="user-tokens">0</div>
+        <div style="font-size: 14px; color: var(--gold); font-weight: bold;">TOTAL TOKENS</div>
+        <div class="taka-val" id="user-taka">≈ 0.00 Taka</div>
+    </div>
+
+    <!-- EARN PAGE -->
+    <div id="earn-page" class="page active">
+        <div class="checkin-container">
+            <button class="btn-checkin" id="btn-checkin" onclick="claimDaily()">
+                🎁 Daily Check-in (+<span id="daily-amt">1</span> Tokens)
+            </button>
+        </div>
+
+        <div class="section-title">📡 Live Ad Slots</div>
+        <div class="ad-box">
+            <div class="ad-info"><h4>Slot 1 (Monetag)</h4><p>Watch video • 5 Tokens</p></div>
+            <button class="btn-watch btn-slot1" onclick="watchSlot1()">Watch</button>
+        </div>
+        <div class="ad-box">
+            <div class="ad-info"><h4>Slot 2 (Adsterra)</h4><p>15s Timer • 5 Tokens</p></div>
+            <button class="btn-watch btn-slot2" onclick="watchSlot2()">Watch</button>
+        </div>
+
+        <div class="section-title">⚡ Extra Tasks</div>
+        <div id="dynamic-tasks"></div>
+    </div>
+
+    <!-- REFER PAGE -->
+    <div id="refer-page" class="page">
+        <div class="section-title">👥 Refer & Earn</div>
+        <div class="card" style="text-align: center;">
+            <input type="text" id="share-link" class="input-field" readonly style="text-align: center; border-color: var(--gold);">
+            <button class="btn-watch btn-slot2" style="width: 100%;" onclick="copyLink()">Copy Referral Link</button>
+            <div style="margin-top: 15px;">Total Referrals: <span id="ref-count" style="color: var(--gold);">0</span></div>
+        </div>
+    </div>
+
+    <!-- WALLET PAGE (Updated with History) -->
+    <div id="wallet-page" class="page">
+        <div class="section-title">💼 Withdraw Wallet</div>
+        <div class="card">
+            <p id="withdraw-info" style="font-size: 12px; color: #7A82A0; margin-bottom: 10px;">Loading...</p>
+            <p id="ref-status" style="font-size: 13px; color: var(--red); font-weight: bold; margin-bottom: 10px;">Checking...</p>
+            <input type="number" id="bkash-num" class="input-field" placeholder="bKash Number">
+            <input type="number" id="w-amount" class="input-field" placeholder="Amount of Tokens">
+            <button class="btn-withdraw" onclick="withdraw()">Withdraw Now</button>
+        </div>
+
+        <div class="section-title">📜 Withdraw History</div>
+        <div id="withdraw-list" style="padding: 0 15px; margin-top: 10px;">
+            <!-- History will load here -->
+            <p style="font-size: 12px; color: #555; text-align: center;">No history available</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="nav('earn', this)"><span>📺</span>Earn</button>
+        <button class="nav-btn" onclick="nav('refer', this)"><span>👥</span>Refer</button>
+        <button class="nav-btn" onclick="nav('wallet', this)"><span>💼</span>Wallet</button>
+    </div>
+</div>
+
+<!-- Ad Overlays... (আগের মতোই) -->
+<div id="ad-overlay">
+    <div class="fake-x" onclick="alert('Wait for timer!')">✖</div>
+    <div class="real-x" id="real-x-btn" onclick="completeAdsterra()">✖ Close Ad</div>
+    <div class="timer-circle" id="timer-box">15</div>
+</div>
+
+<script>
+// --- FIREBASE CONFIG (আগের কনফিগ এখানে বসাও) ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBW1NgEeWJYwL5_EDcg5b1KsyJttsmhMQY",
+  authDomain: "adsphere-rewards.firebaseapp.com",
+  databaseURL: "https://adsphere-rewards-default-rtdb.firebaseio.com",
+  projectId: "adsphere-rewards",
+  storageBucket: "adsphere-rewards.firebasestorage.app",
+  messagingSenderId: "919023635999",
+  appId: "1:919023635999:web:a93f4572f98bf7fd544f2a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// --- STATE ---
+let UID = localStorage.getItem('ads_uid') || "U" + Math.floor(Math.random()*1000000);
+localStorage.setItem('ads_uid', UID);
+
+let userData = { tokens: 0, referrals: 0, streak: 0, lastCheck: "" };
+let settings = { rate: 100, minWithdraw: 2000, minRef: 5 };
+const today = new Date().toLocaleDateString();
+
+function syncAll() {
+    db.ref('settings').on('value', (s) => { if(s.exists()) settings = s.val(); updateUI(); });
+
+    db.ref('users/' + UID).on('value', (s) => {
+        if(s.exists()) userData = s.val();
+        else db.ref('users/' + UID).set({ tokens: 0, referrals: 0, streak: 0, lastCheck: "" });
+        updateUI();
+    });
+
+    db.ref('tasks').on('value', s => {
+        const tasks = s.val();
+        const container = document.getElementById('dynamic-tasks');
+        container.innerHTML = "";
+        for(let id in tasks) {
+            container.innerHTML += `<div class="ad-box"><div class="ad-info"><h4>${tasks[id].name}</h4><p>${tasks[id].reward} Tokens</p></div><button class="btn-watch btn-slot1" onclick="doTask('${tasks[id].link}', ${tasks[id].reward})">Visit</button></div>`;
+        }
+    });
+
+    // --- উইথড্র হিস্টরি সিঙ্ক করার নতুন অংশ ---
+    db.ref('withdrawals').on('value', s => {
+        const list = s.val();
+        const container = document.getElementById('withdraw-list');
+        container.innerHTML = "";
+        let found = false;
+        for(let id in list) {
+            if(list[id].uid === UID) {
+                found = true;
+                let statusText = list[id].status.toUpperCase();
+                let statusClass = (list[id].status === 'pending') ? 'status-p' : (list[id].status === 'paid' ? 'status-s' : 'status-r');
+                
+                container.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <b>${list[id].amount} Tokens</b><br>
+                            <span style="font-size:10px; color:#555;">${list[id].bkash}</span>
+                        </div>
+                        <div class="${statusClass}">${statusText}</div>
+                    </div>`;
+            }
+        }
+        if(!found) container.innerHTML = `<p style="font-size: 12px; color: #555; text-align: center;">No history available</p>`;
+    });
+}
+
+// updateUI, claimDaily, watchSlot, withdraw, nav ফাংশনগুলো আগের মতোই থাকবে...
+function updateUI() {
+    document.getElementById('u-id').innerText = "ID: " + UID;
+    document.getElementById('user-tokens').innerText = userData.tokens || 0;
+    let taka = ((userData.tokens || 0) / settings.rate).toFixed(2);
+    document.getElementById('user-taka').innerText = `≈ ${taka} Taka`;
+    document.getElementById('ref-count').innerText = userData.referrals || 0;
+    document.getElementById('share-link').value = window.location.origin + "?ref=" + UID;
+    document.getElementById('daily-amt').innerText = (userData.streak || 0) + 1;
+    document.getElementById('withdraw-info').innerHTML = `• Min Withdrawal: ${settings.minWithdraw} Tokens<br>• 1 Taka = ${settings.rate} Tokens<br>• Condition: ${settings.minRef} Referrals`;
+    const status = document.getElementById('ref-status');
+    if((userData.referrals || 0) >= settings.minRef) {
+        status.innerText = "✅ Condition Met!";
+        status.style.color = "var(--green)";
+    } else {
+        status.innerText = `❌ ${settings.minRef} Referrals Needed`;
+        status.style.color = "var(--red)";
+    }
+    if(userData.lastCheck === today) {
+        document.getElementById('btn-checkin').disabled = true;
+        document.getElementById('btn-checkin').innerText = "✅ CLAIMED";
+    }
+}
+
+function claimDaily() {
+    if(userData.lastCheck === today) return;
+    let reward = (userData.streak || 0) + 1;
+    db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + reward, streak: reward, lastCheck: today });
+    alert("Reward Claimed!");
+}
+
+function watchSlot1() {
+    if (typeof show_10935540 === 'function') {
+        show_10935540().then(() => {
+            db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + 5 });
+            alert("5 Tokens Added!");
+        });
+    } else { alert("Ad Loading..."); }
+}
+
+function watchSlot2() {
+    window.open("https://www.profitablecpmratenetwork.com/q8n1n0zh8?key=a85d3e74217dd16c5ae7e16e5f3e9e35", "_blank");
+    document.getElementById('ad-overlay').style.display = 'flex';
+    let count = 15;
+    let timer = setInterval(() => {
+        count--;
+        document.getElementById('timer-box').innerText = count;
+        if(count === 5) document.querySelector('.fake-x').style.display = 'block';
+        if(count <= 0) {
+            clearInterval(timer);
+            document.querySelector('.fake-x').style.display = 'none';
+            document.getElementById('real-x-btn').style.display = 'block';
+        }
+    }, 1000);
+}
+
+function completeAdsterra() {
+    db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + 5 });
+    document.getElementById('ad-overlay').style.display = 'none';
+    document.getElementById('real-x-btn').style.display = 'none';
+    alert("5 Tokens Added!");
+}
+
+function doTask(link, reward) {
+    window.open(link, "_blank");
+    setTimeout(() => {
+        db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + reward });
+        alert("Task Complete!");
+    }, 5000);
+}
+
+function withdraw() {
+    const num = document.getElementById('bkash-num').value;
+    const amt = parseInt(document.getElementById('w-amount').value);
+    if((userData.referrals || 0) < settings.minRef) return alert(`Need ${settings.minRef} refs!`);
+    if(amt < settings.minWithdraw) return alert(`Min ${settings.minWithdraw} tokens!`);
+    if(userData.tokens < amt) return alert("Insufficient balance!");
+    if(num.length < 11) return alert("Valid bKash required.");
+
+    db.ref('withdrawals/').push({ uid: UID, bkash: num, amount: amt, status: "pending", time: Date.now() });
+    db.ref('users/' + UID).update({ tokens: userData.tokens - amt });
+    alert("Request Sent!");
+}
+
+function nav(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id + '-page').classList.add('active');
+    btn.classList.add('active');
+}
+
+function copyLink() {
+    const input = document.getElementById('share-link');
+    input.select();
+    document.execCommand('copy');
+    alert("Copied!");
+}
+
+const params = new URLSearchParams(window.location.search);
+const refBy = params.get('ref');
+if(refBy && refBy !== UID && !localStorage.getItem('is_ref')) {
+    db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
+    localStorage.setItem('is_ref', 'true');
+}
+
+syncAll();
+</script>
+</body>
