@@ -13,7 +13,6 @@
 <script src='//libtl.com/sdk.js' data-zone='10935540' data-sdk='show_10935540'></script>
 
 <style>
-  /* আগের সব CSS এখানে থাকবে... শুধু হিস্টরির জন্য নিচের টুকু যোগ হবে */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Poppins', sans-serif; background: #070B14; color: #E8EAF0; overflow-x: hidden; }
   :root { --gold: #F5C842; --gold-glow: rgba(245, 200, 66, 0.4); --accent: #00D2FF; --green: #2ECC8A; --red: #FF4F6D; --surface: #101626; --border: rgba(255, 255, 255, 0.08); }
@@ -27,12 +26,50 @@
   .btn-checkin { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, #F5C842, #E8A020); color: #000; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(245, 200, 66, 0.3); transition: 0.3s; }
   .btn-checkin:disabled { background: #2A2E39; color: #555; box-shadow: none; cursor: not-allowed; }
   .section-title { padding: 0 20px 10px; font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; }
-  .ad-box { background: var(--surface); padding: 20px; border-radius: 18px; margin: 0 15px 15px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .ad-info h4 { font-size: 15px; margin-bottom: 4px; }
-  .ad-info p { font-size: 12px; color: #7A82A0; }
-  .btn-watch { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.3s; }
+  /* Ad Box এর স্টাইল পরিবর্তন */
+  .ad-box {
+    background: var(--surface);
+    padding: 20px;
+    border-radius: 18px;
+    margin: 15px auto; /* মাঝখানে আনার জন্য */
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* বাটন এবং টেক্সট উপরে নিচে রাখার জন্য */
+    align-items: center; /* মাঝখানে আনার জন্য */
+    justify-content: center;
+    max-width: 300px; /* নির্দিষ্ট চওড়া */
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.6); /* উজ্জ্বল ফ্রেম */
+    position: relative; /* কাউন্টার পজিশন করার জন্য */
+  }
+  .ad-info { text-align: center; margin-bottom: 15px; }
+  .ad-info h4 { font-size: 18px; margin-bottom: 8px; color: var(--accent); }
+  .ad-info p { font-size: 14px; color: #7A82A0; }
+  .btn-watch {
+    padding: 15px 30px; /* বাটনের আকার বড় করা */
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 16px; /* ফন্ট সাইজ বড় করা */
+    transition: 0.3s;
+    width: 80%; /* বাটনের চওড়া */
+    max-width: 200px; /* সর্বোচ্চ চওড়া */
+  }
   .btn-slot1 { background: var(--accent); color: #000; }
   .btn-slot2 { background: var(--gold); color: #000; }
+  /* কাউন্টার স্টাইল */
+  .ad-counter {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+  }
+
+
   #ad-overlay { position: fixed; inset: 0; background: #050810; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
   .timer-circle { width: 100px; height: 100px; border: 5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--gold); box-shadow: 0 0 20px var(--gold-glow); margin-bottom: 30px; }
   .fake-x { position: absolute; top: 30px; right: 30px; font-size: 24px; color: #222; cursor: pointer; display: none; }
@@ -81,14 +118,21 @@
         </div>
 
         <div class="section-title">📡 Live Ad Slots</div>
+        
+        <!-- Slot 1 Ad Box -->
         <div class="ad-box">
-            <div class="ad-info"><h4>Slot 1 (Monetag)</h4><p>Watch video • 5 Tokens</p></div>
-            <button class="btn-watch btn-slot1" onclick="watchSlot1()">Watch</button>
+            <span class="ad-counter" id="slot1-counter">0/50</span>
+            <div class="ad-info"><h4>Slot 1</h4><p>Watch video • 5 Tokens</p></div>
+            <button class="btn-watch btn-slot1" id="btn-slot1" onclick="watchSlot1()">Watch</button>
         </div>
+
+        <!-- Slot 2 Ad Box -->
         <div class="ad-box">
-            <div class="ad-info"><h4>Slot 2 (Adsterra)</h4><p>15s Timer • 5 Tokens</p></div>
-            <button class="btn-watch btn-slot2" onclick="watchSlot2()">Watch</button>
+            <span class="ad-counter" id="slot2-counter">0/50</span>
+            <div class="ad-info"><h4>Slot 2</h4><p>15s Timer • 5 Tokens</p></div>
+            <button class="btn-watch btn-slot2" id="btn-slot2" onclick="watchSlot2()">Watch</button>
         </div>
+
 
         <div class="section-title">⚡ Extra Tasks</div>
         <div id="dynamic-tasks"></div>
@@ -137,7 +181,7 @@
 </div>
 
 <script>
-// --- FIREBASE CONFIG (আগের কনফিগ এখানে বসাও) ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyBW1NgEeWJYwL5_EDcg5b1KsyJttsmhMQY",
   authDomain: "adsphere-rewards.firebaseapp.com",
@@ -155,17 +199,55 @@ const db = firebase.database();
 let UID = localStorage.getItem('ads_uid') || "U" + Math.floor(Math.random()*1000000);
 localStorage.setItem('ads_uid', UID);
 
-// completedTasks এখন তারিখ নয়, শুধু boolean (true/false) রাখবে
-let userData = { tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {} };
-let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100 };
+let userData = {
+    tokens: 0,
+    referrals: 0,
+    streak: 0,
+    lastCheck: "",
+    completedTasks: {},
+    adCounts: {
+        slot1: { count: 0, date: "" },
+        slot2: { count: 0, date: "" }
+    }
+};
+let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100, maxAdsPerSlot: 50 }; // maxAdsPerSlot যোগ করা হয়েছে
 const today = new Date().toLocaleDateString();
 
 function syncAll() {
     db.ref('settings').on('value', (s) => { if(s.exists()) settings = s.val(); updateUI(); });
 
     db.ref('users/' + UID).on('value', (s) => {
-        if(s.exists()) userData = s.val();
-        else db.ref('users/' + UID).set({ tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {} });
+        if(s.exists()) {
+            userData = s.val();
+            // Ad count reset for new day
+            if (!userData.adCounts) { // যদি adCounts না থাকে তবে ইনিশিয়ালাইজ করো
+                userData.adCounts = {
+                    slot1: { count: 0, date: "" },
+                    slot2: { count: 0, date: "" }
+                };
+            }
+            if (userData.adCounts.slot1.date !== today) {
+                userData.adCounts.slot1 = { count: 0, date: today };
+                db.ref('users/' + UID + '/adCounts/slot1').set(userData.adCounts.slot1);
+            }
+            if (userData.adCounts.slot2.date !== today) {
+                userData.adCounts.slot2 = { count: 0, date: today };
+                db.ref('users/' + UID + '/adCounts/slot2').set(userData.adCounts.slot2);
+            }
+
+        } else {
+            db.ref('users/' + UID).set({
+                tokens: 0,
+                referrals: 0,
+                streak: 0,
+                lastCheck: "",
+                completedTasks: {},
+                adCounts: {
+                    slot1: { count: 0, date: today },
+                    slot2: { count: 0, date: today }
+                }
+            });
+        }
         updateUI();
     });
 
@@ -174,8 +256,7 @@ function syncAll() {
         const container = document.getElementById('dynamic-tasks');
         container.innerHTML = "";
         for(let id in tasks) {
-            // Check if task is completed - এখন শুধু ট্রু/ফলস দেখবে
-            const isCompleted = userData.completedTasks && userData.completedTasks[id]; // 'today' চেক সরানো হয়েছে
+            const isCompleted = userData.completedTasks && userData.completedTasks[id];
             const buttonText = isCompleted ? '✅ Completed' : 'Visit';
             const buttonDisabled = isCompleted ? 'disabled' : '';
 
@@ -183,13 +264,11 @@ function syncAll() {
         }
     });
 
-    // --- উইথড্র হিস্টরি সিঙ্ক করার নতুন অংশ ---
     db.ref('withdrawals').on('value', s => {
         const list = s.val();
         const container = document.getElementById('withdraw-list');
         container.innerHTML = "";
         let found = false;
-        // Reverse order to show latest withdrawals first
         const withdrawalArray = [];
         for (let id in list) {
             withdrawalArray.push({ id, ...list[id] });
@@ -216,7 +295,6 @@ function syncAll() {
     });
 }
 
-// updateUI, claimDaily, watchSlot, withdraw, nav ফাংশনগুলো আগের মতোই থাকবে...
 function updateUI() {
     document.getElementById('u-id').innerText = "ID: " + UID;
     document.getElementById('user-tokens').innerText = userData.tokens || 0;
@@ -238,6 +316,30 @@ function updateUI() {
         document.getElementById('btn-checkin').disabled = true;
         document.getElementById('btn-checkin').innerText = "✅ CLAIMED";
     }
+
+    // Update ad counters and button states
+    const slot1Count = userData.adCounts.slot1.count;
+    const slot2Count = userData.adCounts.slot2.count;
+    const maxAds = settings.maxAdsPerSlot;
+
+    document.getElementById('slot1-counter').innerText = `${slot1Count}/${maxAds}`;
+    document.getElementById('slot2-counter').innerText = `${slot2Count}/${maxAds}`;
+
+    if (slot1Count >= maxAds) {
+        document.getElementById('btn-slot1').disabled = true;
+        document.getElementById('btn-slot1').innerText = "Limit Reached";
+    } else {
+        document.getElementById('btn-slot1').disabled = false;
+        document.getElementById('btn-slot1').innerText = "Watch";
+    }
+
+    if (slot2Count >= maxAds) {
+        document.getElementById('btn-slot2').disabled = true;
+        document.getElementById('btn-slot2').innerText = "Limit Reached";
+    } else {
+        document.getElementById('btn-slot2').disabled = false;
+        document.getElementById('btn-slot2').innerText = "Watch";
+    }
 }
 
 function claimDaily() {
@@ -248,15 +350,30 @@ function claimDaily() {
 }
 
 function watchSlot1() {
+    if (userData.adCounts.slot1.count >= settings.maxAdsPerSlot) {
+        alert("You have reached the daily limit for Slot 1 ads.");
+        return;
+    }
+
     if (typeof show_10935540 === 'function') {
         show_10935540().then(() => {
-            db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + 5 });
+            const newCount = userData.adCounts.slot1.count + 1;
+            const updates = {};
+            updates['tokens'] = (userData.tokens || 0) + 5;
+            updates['adCounts/slot1/count'] = newCount;
+            updates['adCounts/slot1/date'] = today; // Ensure date is updated
+            db.ref('users/' + UID).update(updates);
             alert("5 Tokens Added!");
         });
     } else { alert("Ad Loading..."); }
 }
 
 function watchSlot2() {
+    if (userData.adCounts.slot2.count >= settings.maxAdsPerSlot) {
+        alert("You have reached the daily limit for Slot 2 ads.");
+        return;
+    }
+
     window.open("https://www.profitablecpmratenetwork.com/q8n1n0zh8?key=a85d3e74217dd16c5ae7e16e5f3e9e35", "_blank");
     document.getElementById('ad-overlay').style.display = 'flex';
     let count = 15;
@@ -273,16 +390,21 @@ function watchSlot2() {
 }
 
 function completeAdsterra() {
-    db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + 5 });
+    const newCount = userData.adCounts.slot2.count + 1;
+    const updates = {};
+    updates['tokens'] = (userData.tokens || 0) + 5;
+    updates['adCounts/slot2/count'] = newCount;
+    updates['adCounts/slot2/date'] = today; // Ensure date is updated
+    db.ref('users/' + UID).update(updates);
+
     document.getElementById('ad-overlay').style.display = 'none';
     document.getElementById('real-x-btn').style.display = 'none';
     alert("5 Tokens Added!");
 }
 
 function doTask(taskId, link, reward) {
-    // এখানে চেক করা হবে taskId এর মান userData.completedTasks এ true আছে কিনা
     if (userData.completedTasks && userData.completedTasks[taskId]) {
-        alert("You have already completed this task permanently!"); // মেসেজ পরিবর্তন করা হয়েছে
+        alert("You have already completed this task permanently!");
         return;
     }
 
@@ -290,7 +412,7 @@ function doTask(taskId, link, reward) {
     setTimeout(() => {
         const updates = {};
         updates['tokens'] = (userData.tokens || 0) + reward;
-        updates['completedTasks/' + taskId] = true; // শুধু true সেট করা হয়েছে, তারিখ নয়
+        updates['completedTasks/' + taskId] = true;
         db.ref('users/' + UID).update(updates);
         alert("Task Complete!");
     }, 5000);
@@ -327,7 +449,7 @@ const params = new URLSearchParams(window.location.search);
 const refBy = params.get('ref');
 if(refBy && refBy !== UID && !localStorage.getItem('is_ref')) {
     db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
-    db.ref('users/' + refBy + '/tokens').transaction(t => (t || 0) + (settings.referralBonus || 100)); // Add referral bonus
+    db.ref('users/' + refBy + '/tokens').transaction(t => (t || 0) + (settings.referralBonus || 100));
     localStorage.setItem('is_ref', 'true');
 }
 
