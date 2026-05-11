@@ -59,7 +59,7 @@
     </div>
 
     <div class="balance-card">
-        <div class="token-val" id="user-tokens">0</div>
+        <div class="token-val" id="user-tokens">...</div>
         <div style="font-size: 14px; color: var(--gold); font-weight: bold;">TOTAL TOKENS</div>
         <div class="taka-val" id="user-taka">≈ 0.00 Taka</div>
     </div>
@@ -74,13 +74,13 @@
         <div class="section-title">📡 Live Ad Slots</div>
         
         <div class="ad-box">
-            <span class="ad-counter" id="slot1-counter">0/--</span>
+            <span class="ad-counter" id="slot1-counter">0/0</span>
             <div class="ad-info"><h4>Slot 1</h4><p>Watch video • 5 Tokens</p></div>
             <button class="btn-watch btn-slot1" id="btn-slot1" onclick="watchSlot1()">Watch</button>
         </div>
 
         <div class="ad-box">
-            <span class="ad-counter" id="slot2-counter">0/--</span>
+            <span class="ad-counter" id="slot2-counter">0/0</span>
             <div class="ad-info"><h4>Slot 2</h4><p>15s Timer • 5 Tokens</p></div>
             <button class="btn-watch btn-slot2" id="btn-slot2" onclick="watchSlot2()">Watch</button>
         </div>
@@ -142,47 +142,45 @@ const db = firebase.database();
 let UID = localStorage.getItem('ads_uid') || "U" + Math.floor(Math.random()*1000000);
 localStorage.setItem('ads_uid', UID);
 
-let userData = {
-    tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {},
-    adCounts: { slot1: { count: 0, date: "" }, slot2: { count: 0, date: "" } }
-};
-// Default Settings Fallback
-let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100, maxAdsPerSlot: 50 };
 const today = new Date().toLocaleDateString();
+let userData = null; // null check added
+let settings = { rate: 100, minWithdraw: 2000, minRef: 5, referralBonus: 100, maxAdsPerSlot: 50 };
 
 function syncAll() {
+    // Sync Settings
     db.ref('settings').on('value', (s) => {
-        if(s.exists()) {
-            settings = {...settings, ...s.val()};
-            // Force 50 if still undefined in DB
-            if(!settings.maxAdsPerSlot) settings.maxAdsPerSlot = 50;
-        }
+        if(s.exists()) settings = {...settings, ...s.val()};
         updateUI();
     });
 
+    // Sync User Data
     db.ref('users/' + UID).on('value', (s) => {
         if(s.exists()) {
             userData = s.val();
-            if (!userData.adCounts) {
-                userData.adCounts = { slot1: { count: 0, date: today }, slot2: { count: 0, date: today } };
-                db.ref('users/' + UID + '/adCounts').set(userData.adCounts);
-            }
+            // Reset counts if it's a new day
+            if (!userData.adCounts) userData.adCounts = { slot1: { count: 0, date: today }, slot2: { count: 0, date: today } };
             if (userData.adCounts.slot1.date !== today) {
-                db.ref('users/' + UID + '/adCounts/slot1').update({ count: 0, date: today });
+                userData.adCounts.slot1 = { count: 0, date: today };
+                db.ref('users/' + UID + '/adCounts/slot1').set(userData.adCounts.slot1);
             }
             if (userData.adCounts.slot2.date !== today) {
-                db.ref('users/' + UID + '/adCounts/slot2').update({ count: 0, date: today });
+                userData.adCounts.slot2 = { count: 0, date: today };
+                db.ref('users/' + UID + '/adCounts/slot2').set(userData.adCounts.slot2);
             }
         } else {
-            db.ref('users/' + UID).set({
+            // New user initialization
+            userData = {
                 tokens: 0, referrals: 0, streak: 0, lastCheck: "", completedTasks: {},
                 adCounts: { slot1: { count: 0, date: today }, slot2: { count: 0, date: today } }
-            });
+            };
+            db.ref('users/' + UID).set(userData);
         }
         updateUI();
     });
 
+    // Sync Tasks
     db.ref('tasks').on('value', s => {
+        if(!userData) return;
         const tasks = s.val();
         const container = document.getElementById('dynamic-tasks');
         container.innerHTML = "";
@@ -192,6 +190,7 @@ function syncAll() {
         }
     });
 
+    // Sync Withdrawals
     db.ref('withdrawals').on('value', s => {
         const list = s.val();
         const container = document.getElementById('withdraw-list');
@@ -212,11 +211,13 @@ function syncAll() {
 }
 
 function updateUI() {
+    if (!userData) return;
+
     document.getElementById('u-id').innerText = "ID: " + UID;
-    document.getElementById('user-tokens').innerText = userData.tokens || 0;
-    document.getElementById('user-taka').innerText = `≈ ${((userData.tokens||0)/settings.rate).toFixed(2)} Taka`;
+    document.getElementById('user-tokens').innerText = userData.tokens;
+    document.getElementById('user-taka').innerText = `≈ ${(userData.tokens/settings.rate).toFixed(2)} Taka`;
     document.getElementById('ref-count').innerText = userData.referrals || 0;
-    document.getElementById('share-link').value = window.location.origin + "?ref=" + UID;
+    document.getElementById('share-link').value = window.location.origin + window.location.pathname + "?ref=" + UID;
     document.getElementById('daily-amt').innerText = (userData.streak || 0) + 1;
     document.getElementById('withdraw-info').innerHTML = `• Min: ${settings.minWithdraw} | 1 Taka = ${settings.rate} | Req: ${settings.minRef} Refs`;
     
@@ -230,10 +231,9 @@ function updateUI() {
         document.getElementById('btn-checkin').innerText = "✅ CLAIMED";
     }
 
-    // Fixed Ad Counter Logic
-    const s1 = (userData.adCounts && userData.adCounts.slot1) ? userData.adCounts.slot1.count : 0;
-    const s2 = (userData.adCounts && userData.adCounts.slot2) ? userData.adCounts.slot2.count : 0;
     const max = settings.maxAdsPerSlot || 50;
+    const s1 = userData.adCounts.slot1.count;
+    const s2 = userData.adCounts.slot2.count;
 
     document.getElementById('slot1-counter').innerText = `${s1}/${max}`;
     document.getElementById('slot2-counter').innerText = `${s2}/${max}`;
@@ -247,21 +247,28 @@ function updateUI() {
 function claimDaily() {
     if(userData.lastCheck === today) return;
     let reward = (userData.streak || 0) + 1;
-    db.ref('users/' + UID).update({ tokens: (userData.tokens || 0) + reward, streak: reward, lastCheck: today });
+    db.ref('users/' + UID).update({ 
+        tokens: userData.tokens + reward, 
+        streak: reward, 
+        lastCheck: today 
+    });
     alert("Reward Claimed!");
 }
 
 function watchSlot1() {
     if (typeof show_10935540 === 'function') {
         show_10935540().then(() => {
+            const nextCount = userData.adCounts.slot1.count + 1;
             db.ref('users/' + UID).update({
-                tokens: (userData.tokens || 0) + 5,
-                "adCounts/slot1/count": (userData.adCounts.slot1.count + 1),
-                "adCounts/slot1/date": today
+                tokens: userData.tokens + 5,
+            });
+            db.ref('users/' + UID + '/adCounts/slot1').update({
+                count: nextCount,
+                date: today
             });
             alert("5 Tokens Added!");
         });
-    } else { alert("Ad Loading..."); }
+    } else { alert("Ad Loading... Try again."); }
 }
 
 function watchSlot2() {
@@ -281,13 +288,17 @@ function watchSlot2() {
 }
 
 function completeAdsterra() {
+    const nextCount = userData.adCounts.slot2.count + 1;
     db.ref('users/' + UID).update({
-        tokens: (userData.tokens || 0) + 5,
-        "adCounts/slot2/count": (userData.adCounts.slot2.count + 1),
-        "adCounts/slot2/date": today
+        tokens: userData.tokens + 5
+    });
+    db.ref('users/' + UID + '/adCounts/slot2').update({
+        count: nextCount,
+        date: today
     });
     document.getElementById('ad-overlay').style.display = 'none';
     document.getElementById('real-x-btn').style.display = 'none';
+    document.getElementById('timer-box').innerText = '15';
     alert("5 Tokens Added!");
 }
 
@@ -295,7 +306,7 @@ function doTask(taskId, link, reward) {
     window.open(link, "_blank");
     setTimeout(() => {
         db.ref('users/' + UID).update({
-            tokens: (userData.tokens || 0) + reward,
+            tokens: userData.tokens + reward,
             ["completedTasks/" + taskId]: true
         });
         alert("Task Complete!");
@@ -329,12 +340,17 @@ function copyLink() {
     alert("Copied!");
 }
 
+// Referral Logic
 const params = new URLSearchParams(window.location.search);
 const refBy = params.get('ref');
 if(refBy && refBy !== UID && !localStorage.getItem('is_ref')) {
-    db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
-    db.ref('users/' + refBy + '/tokens').transaction(t => (t || 0) + (settings.referralBonus || 100));
-    localStorage.setItem('is_ref', 'true');
+    db.ref('users/' + refBy).once('value', s => {
+        if(s.exists()){
+            db.ref('users/' + refBy + '/referrals').transaction(c => (c || 0) + 1);
+            db.ref('users/' + refBy + '/tokens').transaction(t => (t || 0) + (settings.referralBonus || 100));
+            localStorage.setItem('is_ref', 'true');
+        }
+    });
 }
 
 syncAll();
